@@ -40,3 +40,5 @@ Icon?
 ehthumbs.db
 Thumbs.db
 
+*.log
+/Unity_Final_2025/.vs
