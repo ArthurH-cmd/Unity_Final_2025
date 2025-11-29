@@ -260,6 +260,7 @@ Transform:
   - {fileID: 1922699460972368376}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+<<<<<<< Updated upstream
 --- !u!1 &3823118927887340895
 GameObject:
   m_ObjectHideFlags: 0
@@ -293,6 +294,8 @@ Transform:
   - {fileID: 719320242844366881}
   m_Father: {fileID: 6414358684717190811}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+=======
+>>>>>>> Stashed changes
 --- !u!114 &2016092740238394635
 MonoBehaviour:
   m_ObjectHideFlags: 0
