@@ -7,6 +7,8 @@ public class Player_Movement : MonoBehaviour
     private float moveSpeed = 5.0f;
     [SerializeField]
     private float rotationSpeed = 1.0f;
+    [SerializeField]
+    public Transform target;
 
     private Animator animator;
     private Rigidbody rigidBody = null;
@@ -54,12 +56,19 @@ public class Player_Movement : MonoBehaviour
         rigidBody.linearVelocity = moveVelocity;
         rigidBody.angularVelocity = Vector3.zero;
 
-        // Look at target
-        Vector3 targetPosition = Vector3.zero;
-        Vector3 targetLook = targetPosition - transform.position;
-        targetLook.y = 0.0f;
-        Quaternion targetRot = Quaternion.LookRotation(targetLook.normalized, Vector3.up);
-        transform.rotation = targetRot;
+        // Look at target 
+        if (target != null)
+        {
+            Vector3 dirToTarget = target.position - transform.position;
+            dirToTarget.y = 0f; // keep level rotation
+
+            if (dirToTarget != Vector3.zero)
+            {
+                Quaternion targetRot = Quaternion.LookRotation(dirToTarget.normalized, Vector3.up);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, rotationSpeed * Time.deltaTime);
+            }
+        }
+
 
         // playerInputs
         if (Mouse.current.rightButton.wasPressedThisFrame)
