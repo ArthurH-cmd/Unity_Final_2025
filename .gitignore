@@ -42,3 +42,5 @@ Thumbs.db
 
 *.log
 /Unity_Final_2025/.vs
+*.log
+/Unity_Final_2025/Logs
