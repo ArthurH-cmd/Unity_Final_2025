@@ -8,9 +8,16 @@ public class Player_Movement : MonoBehaviour
     [SerializeField]
     private float rotationSpeed = 1.0f;
 
+    private Animator animator;
     private Rigidbody rigidBody = null;
     private Player_Input input = null;
     private InputAction moveAction = null;
+
+    private void Start()
+    {
+        animator = GetComponent<Animator>();
+    }
+
     private void Awake()
     {
         rigidBody = GetComponent<Rigidbody>();
@@ -53,6 +60,20 @@ public class Player_Movement : MonoBehaviour
         targetLook.y = 0.0f;
         Quaternion targetRot = Quaternion.LookRotation(targetLook.normalized, Vector3.up);
         transform.rotation = targetRot;
+
+        // playerInputs
+        if (Mouse.current.rightButton.wasPressedThisFrame)
+        {
+            animator.SetTrigger("RJab");
+            Debug.Log("Right Punch Thrown!");
+        }
+        if (Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            animator.SetTrigger("LJab");
+            Debug.Log("Right Punch Thrown!");
+        }
+
+
     }
 
 
