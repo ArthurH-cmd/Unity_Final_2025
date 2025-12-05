@@ -13,6 +13,11 @@ public class Player_Movement : MonoBehaviour
     [SerializeField]
     private bool isPlayer2 = false;
 
+
+    [SerializeField]
+    private float pushForce = 5.0f;
+
+
     private Animator animator;
     private Rigidbody rigidBody = null;
     private Player_Input input = null;
@@ -173,5 +178,67 @@ public class Player_Movement : MonoBehaviour
         isBlocking = false;
         animator.SetBool("IsBlocking", false); 
         Debug.Log("Player stopped blocking.");
+    }
+
+    public void OnHit(Vector3 hitSourcePosition, float force)
+    {
+
+        // Direction from the source to the player -> push player away from the source
+        Vector3 direction = transform.position - hitSourcePosition;
+        direction.y = 0f; // keep the push horizontal; remove this line if you want vertical component
+        if (direction == Vector3.zero)
+        {
+            direction = transform.forward; // fallback if positions coincide
+        }
+        direction.Normalize();
+        rigidBody.AddForce(direction * force, ForceMode.Impulse);
+    }
+
+    // React when something tagged "hurtbox" hits this player.
+    // Works whether the hurtbox is a trigger or a non-trigger collider.
+    private void OnTriggerEnter(Collider other)
+    {
+        if (!other.CompareTag("HurtBox"))
+        {
+            return;
+        }
+
+        // Prefer attached rigidbody center if available, otherwise use collider closest point
+        Vector3 sourcePos;
+        if (other.attachedRigidbody != null)
+        {
+            sourcePos = other.attachedRigidbody.worldCenterOfMass;
+        }
+        else
+        {
+            sourcePos = other.ClosestPoint(transform.position);
+        }
+        OnHit(sourcePos, pushForce);
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        Collider other = collision.collider;
+        if (!other.CompareTag("HurtBox"))
+        {
+            return;
+        }
+        Vector3 sourcePos;
+        if (collision.contacts != null && collision.contacts.Length > 0)
+        {
+            sourcePos = collision.contacts[0].point;
+        }
+        else
+        {
+            if (other.attachedRigidbody != null)
+            {
+                sourcePos = other.attachedRigidbody.worldCenterOfMass;
+            }
+            else
+            {
+                sourcePos = other.transform.position;
+            }
+        }
+        OnHit(sourcePos, pushForce);
     }
 }
