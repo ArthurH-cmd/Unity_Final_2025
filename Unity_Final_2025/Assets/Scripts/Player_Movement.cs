@@ -25,14 +25,8 @@ public class Player_Movement : MonoBehaviour
     private InputAction jabs = null;
     private InputAction Block = null;
 
-    private void Start()
-    {
-        animator = GetComponent<Animator>();
-        if (animator == null)
-        {
-            Debug.LogError("Animator component is missing!");
-        }
-    }
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip hitSound;
 
     private void Awake()
     {
@@ -40,6 +34,12 @@ public class Player_Movement : MonoBehaviour
         if (rigidBody == null)
         {
             Debug.LogError("Rigidbody component is missing!");
+        }
+
+        // Get AudioSource in Awake instead of Start
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
         }
 
         input = new Player_Input();
@@ -55,6 +55,16 @@ public class Player_Movement : MonoBehaviour
             moveAction = input.Player.Move;
             jabs = input.Player.Jabs;
             Block = input.Player.Block;
+        }
+    }
+
+    private void Start()
+    {
+        animator = GetComponent<Animator>();
+
+        if (animator == null)
+        {
+            Debug.LogError("Animator component is missing!");
         }
     }
 
@@ -85,7 +95,7 @@ public class Player_Movement : MonoBehaviour
         {
             Block.Enable();
             Block.performed += BlockPerformed;
-            Block.canceled += BlockCanceled; 
+            Block.canceled += BlockCanceled;
         }
     }
 
@@ -107,7 +117,7 @@ public class Player_Movement : MonoBehaviour
         {
             Block.Disable();
             Block.performed -= BlockPerformed;
-            Block.canceled -= BlockCanceled; 
+            Block.canceled -= BlockCanceled;
         }
     }
 
@@ -164,24 +174,33 @@ public class Player_Movement : MonoBehaviour
         }
     }
 
-    private bool isBlocking = false; 
+    private bool isBlocking = false;
     private void BlockPerformed(InputAction.CallbackContext context)
     {
         isBlocking = true;
-        animator.SetBool("IsBlocking", true); 
+        animator.SetBool("IsBlocking", true);
         Debug.Log("Player started blocking.");
     }
 
     private void BlockCanceled(InputAction.CallbackContext context)
     {
-        
+
         isBlocking = false;
-        animator.SetBool("IsBlocking", false); 
+        animator.SetBool("IsBlocking", false);
         Debug.Log("Player stopped blocking.");
     }
 
     public void OnHit(Vector3 hitSourcePosition, float force)
     {
+        // Add null check before playing sound
+        if (audioSource != null && hitSound != null)
+        {
+            audioSource.PlayOneShot(hitSound);
+        }
+        else
+        {
+            Debug.LogWarning("AudioSource or HitSound is missing!");
+        }
 
         // Direction from the source to the player -> push player away from the source
         Vector3 direction = transform.position - hitSourcePosition;
