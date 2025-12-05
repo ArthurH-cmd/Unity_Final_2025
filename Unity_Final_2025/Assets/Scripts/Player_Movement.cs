@@ -18,6 +18,7 @@ public class Player_Movement : MonoBehaviour
     private Player_Input input = null;
     private InputAction moveAction = null;
     private InputAction jabs = null;
+    private InputAction Block = null;
 
     private void Start()
     {
@@ -42,11 +43,13 @@ public class Player_Movement : MonoBehaviour
         {
             moveAction = input.Player2.Move;
             jabs = input.Player2.Jabs;
+            Block = input.Player2.Block;
         }
         else // Player 1 controls
         {
             moveAction = input.Player.Move;
             jabs = input.Player.Jabs;
+            Block = input.Player.Block;
         }
     }
 
@@ -72,6 +75,13 @@ public class Player_Movement : MonoBehaviour
         {
             Debug.LogWarning("Jabs action is not assigned!");
         }
+
+        if (Block != null)
+        {
+            Block.Enable();
+            Block.performed += BlockPerformed;
+            Block.canceled += BlockCanceled; 
+        }
     }
 
     private void OnDisable()
@@ -86,6 +96,13 @@ public class Player_Movement : MonoBehaviour
         if (jabs != null)
         {
             jabs.Disable();
+        }
+
+        if (Block != null)
+        {
+            Block.Disable();
+            Block.performed -= BlockPerformed;
+            Block.canceled -= BlockCanceled; 
         }
     }
 
@@ -140,5 +157,21 @@ public class Player_Movement : MonoBehaviour
             animator.SetTrigger("RJab");
             Debug.Log("Right Punch Thrown!");
         }
+    }
+
+    private bool isBlocking = false; 
+    private void BlockPerformed(InputAction.CallbackContext context)
+    {
+        isBlocking = true;
+        animator.SetBool("IsBlocking", true); 
+        Debug.Log("Player started blocking.");
+    }
+
+    private void BlockCanceled(InputAction.CallbackContext context)
+    {
+        
+        isBlocking = false;
+        animator.SetBool("IsBlocking", false); 
+        Debug.Log("Player stopped blocking.");
     }
 }
