@@ -17,42 +17,86 @@ public class Player_Movement : MonoBehaviour
     private Rigidbody rigidBody = null;
     private Player_Input input = null;
     private InputAction moveAction = null;
+    private InputAction jabs = null;
 
     private void Start()
     {
         animator = GetComponent<Animator>();
+        if (animator == null)
+        {
+            Debug.LogError("Animator component is missing!");
+        }
     }
 
     private void Awake()
     {
         rigidBody = GetComponent<Rigidbody>();
-        input = new Player_Input();
-       
+        if (rigidBody == null)
+        {
+            Debug.LogError("Rigidbody component is missing!");
+        }
 
-        if (isPlayer2) // player 2 controls
+        input = new Player_Input();
+
+        if (isPlayer2) // Player 2 controls
         {
             moveAction = input.Player2.Move;
-           
+            jabs = input.Player2.Jabs;
         }
-        else // player 1 controls
+        else // Player 1 controls
         {
             moveAction = input.Player.Move;
+            jabs = input.Player.Jabs;
         }
     }
 
     private void OnEnable()
     {
         input.Enable();
-        moveAction.Enable();
+
+        if (moveAction != null)
+        {
+            moveAction.Enable();
+        }
+        else
+        {
+            Debug.LogWarning("Move action is not assigned!");
+        }
+
+        if (jabs != null)
+        {
+            jabs.Enable();
+            jabs.performed += JabsPerformend;
+        }
+        else
+        {
+            Debug.LogWarning("Jabs action is not assigned!");
+        }
     }
 
     private void OnDisable()
     {
         input.Disable();
-        moveAction.Disable();
+
+        if (moveAction != null)
+        {
+            moveAction.Disable();
+        }
+
+        if (jabs != null)
+        {
+            jabs.Disable();
+        }
     }
+
     private void Update()
     {
+        if (moveAction == null || rigidBody == null)
+        {
+            Debug.LogWarning("Move action or Rigidbody is not assigned!");
+            return;
+        }
+
         // Move Input
         Vector2 moveInput = moveAction.ReadValue<Vector2>();
 
@@ -69,7 +113,7 @@ public class Player_Movement : MonoBehaviour
         rigidBody.linearVelocity = moveVelocity;
         rigidBody.angularVelocity = Vector3.zero;
 
-        // Look at target 
+        // Look at target
         if (target != null)
         {
             Vector3 dirToTarget = target.position - transform.position;
@@ -81,22 +125,20 @@ public class Player_Movement : MonoBehaviour
                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, rotationSpeed * Time.deltaTime);
             }
         }
+    }
 
-
-        // playerInputs
-        if (Mouse.current.rightButton.wasPressedThisFrame)
+    private void JabsPerformend(InputAction.CallbackContext context)
+    {
+        // Determine which jab to trigger based on the input
+        if (context.control.name == "q" || context.control.name == "rightButton") // Left Jab
+        {
+            animator.SetTrigger("LJab");
+            Debug.Log("Left Punch Thrown!");
+        }
+        else if (context.control.name == "e" || context.control.name == "leftButton") // Right Jab
         {
             animator.SetTrigger("RJab");
             Debug.Log("Right Punch Thrown!");
         }
-        if (Mouse.current.leftButton.wasPressedThisFrame)
-        {
-            animator.SetTrigger("LJab");
-            Debug.Log("Right Punch Thrown!");
-        }
-
-
     }
-
-
 }
