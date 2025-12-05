@@ -10,6 +10,9 @@ public class Player_Movement : MonoBehaviour
     [SerializeField]
     public Transform target;
 
+    [SerializeField]
+    private bool isPlayer2 = false;
+
     private Animator animator;
     private Rigidbody rigidBody = null;
     private Player_Input input = null;
@@ -24,7 +27,17 @@ public class Player_Movement : MonoBehaviour
     {
         rigidBody = GetComponent<Rigidbody>();
         input = new Player_Input();
-        moveAction = input.Player.Move;
+       
+
+        if (isPlayer2) // player 2 controls
+        {
+            moveAction = input.Player2.Move;
+           
+        }
+        else // player 1 controls
+        {
+            moveAction = input.Player.Move;
+        }
     }
 
     private void OnEnable()
