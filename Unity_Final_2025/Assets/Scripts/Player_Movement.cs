@@ -18,6 +18,9 @@ public class Player_Movement : MonoBehaviour
     private float pushForce = 5.0f;
 
 
+    [SerializeField] private AudioSource musicBox;
+
+
     private Animator animator;
     private Rigidbody rigidBody = null;
     private Player_Input input = null;
@@ -85,7 +88,7 @@ public class Player_Movement : MonoBehaviour
         {
             Block.Enable();
             Block.performed += BlockPerformed;
-            Block.canceled += BlockCanceled; 
+            Block.canceled += BlockCanceled;
         }
     }
 
@@ -107,7 +110,7 @@ public class Player_Movement : MonoBehaviour
         {
             Block.Disable();
             Block.performed -= BlockPerformed;
-            Block.canceled -= BlockCanceled; 
+            Block.canceled -= BlockCanceled;
         }
     }
 
@@ -164,24 +167,25 @@ public class Player_Movement : MonoBehaviour
         }
     }
 
-    private bool isBlocking = false; 
+    private bool isBlocking = false;
     private void BlockPerformed(InputAction.CallbackContext context)
     {
         isBlocking = true;
-        animator.SetBool("IsBlocking", true); 
+        animator.SetBool("IsBlocking", true);
         Debug.Log("Player started blocking.");
     }
 
     private void BlockCanceled(InputAction.CallbackContext context)
     {
-        
+
         isBlocking = false;
-        animator.SetBool("IsBlocking", false); 
+        animator.SetBool("IsBlocking", false);
         Debug.Log("Player stopped blocking.");
     }
 
     public void OnHit(Vector3 hitSourcePosition, float force)
     {
+        musicBox.Play();
 
         // Direction from the source to the player -> push player away from the source
         Vector3 direction = transform.position - hitSourcePosition;

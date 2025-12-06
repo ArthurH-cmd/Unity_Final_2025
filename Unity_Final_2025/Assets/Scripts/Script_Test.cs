@@ -17,6 +17,9 @@ public class Script_Test : MonoBehaviour
     [SerializeField]
     private float pushForce = 5.0f;
 
+   
+    [SerializeField] private AudioSource musicBox;
+
 
     private Animator animator;
     private Rigidbody rigidBody = null;
@@ -182,6 +185,7 @@ public class Script_Test : MonoBehaviour
 
     public void OnHit(Vector3 hitSourcePosition, float force)
     {
+        musicBox.Play();
 
         // Direction from the source to the player -> push player away from the source
         Vector3 direction = transform.position - hitSourcePosition;
