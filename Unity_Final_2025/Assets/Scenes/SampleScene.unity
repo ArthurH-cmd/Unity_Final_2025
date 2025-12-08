@@ -13677,6 +13677,24 @@ MonoBehaviour:
   heavyPushForce: 100
   jabPunchForce: 50
   musicBox: {fileID: 1447445085}
+--- !u!114 &1200019008
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1200018996}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba9cdd8132e656c40b4378309bbda5de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Player_Movement
+  moveSpeed: 5
+  rotationSpeed: 10
+  target: {fileID: 969157169}
+  isPlayer2: 0
+  pushForce: 5
+  musicBox: {fileID: 1447445085}
 --- !u!1 &1201947966
 GameObject:
   m_ObjectHideFlags: 0
@@ -15324,6 +15342,11 @@ Mesh:
       - serializedVersion: 1
         m_IndexStart: 0
         m_IndexCount: 0
+--- !u!65 &1797610095 stripped
+BoxCollider:
+  m_CorrespondingSourceObject: {fileID: 6500443568825774937, guid: e75f70659d1c09e48a9a0cefe005567f, type: 3}
+  m_PrefabInstance: {fileID: 8702213914844433836}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1883363678
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -15376,21 +15399,17 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player2
       objectReference: {fileID: 0}
-    - target: {fileID: 0}
-      propertyPath: target
-      value: 
-      objectReference: {fileID: 969157169}
-    - target: {fileID: 0}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 6688628885937145062, guid: f366a86feb856574184fcfaf540f2c45, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 4302643258643379242, guid: f366a86feb856574184fcfaf540f2c45, type: 3}
-      insertIndex: 3
+      insertIndex: 2
       addedObject: {fileID: 1200019002}
+    - targetCorrespondingSourceObject: {fileID: 4302643258643379242, guid: f366a86feb856574184fcfaf540f2c45, type: 3}
+      insertIndex: 3
+      addedObject: {fileID: 1200019008}
   m_SourcePrefab: {fileID: 100100000, guid: f366a86feb856574184fcfaf540f2c45, type: 3}
 --- !u!1 &1955418059
 GameObject:
@@ -18198,6 +18217,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player1
       objectReference: {fileID: 0}
+    - target: {fileID: 7951502684932606035, guid: e75f70659d1c09e48a9a0cefe005567f, type: 3}
+      propertyPath: hitbox
+      value: 
+      objectReference: {fileID: 1797610095}
     - target: {fileID: 7951502684932606035, guid: e75f70659d1c09e48a9a0cefe005567f, type: 3}
       propertyPath: target
       value: 

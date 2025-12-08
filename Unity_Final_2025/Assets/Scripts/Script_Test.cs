@@ -33,6 +33,8 @@ public class Script_Test : MonoBehaviour
 
     [SerializeField] private AudioSource musicBox;
 
+
+
     private Animator animator;
     private Rigidbody rigidBody = null;
     private Player_Input input = null;
@@ -252,16 +254,27 @@ public class Script_Test : MonoBehaviour
     }
 
     private bool isBlocking = false;
+
     private void BlockPerformed(InputAction.CallbackContext context)
     {
-        isBlocking = true;
-        animator.SetBool("IsBlocking", true);
-        Debug.Log("Player started blocking.");
+        if (currentGuardHealth <= 0)
+        {
+            Block.Disable();
+            return;
+            // add a function for guard health check
+        }
+
+        else
+        {
+            isBlocking = true;
+            animator.SetBool("IsBlocking", true);
+            Debug.Log("Player started blocking.");
+        }   
     }
 
     private void BlockCanceled(InputAction.CallbackContext context)
     {
-
+       
         isBlocking = false;
         animator.SetBool("IsBlocking", false);
         Debug.Log("Player stopped blocking.");
@@ -272,36 +285,57 @@ public class Script_Test : MonoBehaviour
         musicBox.Play();
 
 
-
         if (isBlocking) // block logic
         {
+            if (wutPunch == true) // jabs
+            {
+                pushForce = jabPunchForce / 2;
+                currentGuardHealth -= 10;
+                Debug.Log($"{currentGuardHealth} left");
+            }
+
+            else // heavy
+            {
+                pushForce = heavyPushForce / 2;
+                currentGuardHealth -= 30;
+                Debug.Log($"{currentGuardHealth} left");
+            }
+
+
         }
 
-
-        if (wutPunch == true) // jabs
+        else 
         {
-            pushForce = jabPunchForce;
-            currentPlayerHealth -= 10;
-            Debug.Log($"Player Lost Heralth. {currentPlayerHealth} left");  
-        }
-        else // heavy
-        {
-            pushForce = heavyPushForce;
-            currentPlayerHealth -= 30;
-            Debug.Log($"Player Lost Heralth. {currentPlayerHealth} left");
+            if (wutPunch == true) // jabs
+            {
+                pushForce = jabPunchForce;
+                currentPlayerHealth -= 10;
+                Debug.Log($"Player Lost Health. {currentPlayerHealth} left");
+
+            }
+
+            else // heavy
+            {
+                pushForce = heavyPushForce;
+                currentPlayerHealth -= 30;
+                Debug.Log($"Player Lost Health. {currentPlayerHealth} left");
+            }
         }
 
-
+     
 
         if (currentPlayerHealth < 0) // dies in spanish
         {
             moveAction.Disable();
+            // add a gameover
         }
 
-
         // Direction from the source to the player -> push player away from the source
+
         Vector3 direction = transform.position - hitSourcePosition;
+
         direction.y = 0f; // keep the push horizontal; remove this line if you want vertical component
+
         if (direction == Vector3.zero)
         {
             direction = transform.forward; // fallback if positions coincide
@@ -343,8 +377,6 @@ public class Script_Test : MonoBehaviour
         }
 
         Vector3 sourcePos;
-
-     
 
         if (collision.contacts != null && collision.contacts.Length > 0)
         {
