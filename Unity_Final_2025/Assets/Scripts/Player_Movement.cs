@@ -18,6 +18,9 @@ public class Player_Movement : MonoBehaviour
     private float pushForce = 5.0f;
 
 
+    [SerializeField] private AudioSource musicBox;
+
+
     private Animator animator;
     private Rigidbody rigidBody = null;
     private Player_Input input = null;
@@ -25,8 +28,14 @@ public class Player_Movement : MonoBehaviour
     private InputAction jabs = null;
     private InputAction Block = null;
 
-    [SerializeField] private AudioSource audioSource;
-    [SerializeField] private AudioClip hitSound;
+    private void Start()
+    {
+        animator = GetComponent<Animator>();
+        if (animator == null)
+        {
+            Debug.LogError("Animator component is missing!");
+        }
+    }
 
     private void Awake()
     {
@@ -34,12 +43,6 @@ public class Player_Movement : MonoBehaviour
         if (rigidBody == null)
         {
             Debug.LogError("Rigidbody component is missing!");
-        }
-
-        // Get AudioSource in Awake instead of Start
-        if (audioSource == null)
-        {
-            audioSource = GetComponent<AudioSource>();
         }
 
         input = new Player_Input();
@@ -55,16 +58,6 @@ public class Player_Movement : MonoBehaviour
             moveAction = input.Player.Move;
             jabs = input.Player.Jabs;
             Block = input.Player.Block;
-        }
-    }
-
-    private void Start()
-    {
-        animator = GetComponent<Animator>();
-
-        if (animator == null)
-        {
-            Debug.LogError("Animator component is missing!");
         }
     }
 
@@ -192,15 +185,7 @@ public class Player_Movement : MonoBehaviour
 
     public void OnHit(Vector3 hitSourcePosition, float force)
     {
-        // Add null check before playing sound
-        if (audioSource != null && hitSound != null)
-        {
-            audioSource.PlayOneShot(hitSound);
-        }
-        else
-        {
-            Debug.LogWarning("AudioSource or HitSound is missing!");
-        }
+        musicBox.Play();
 
         // Direction from the source to the player -> push player away from the source
         Vector3 direction = transform.position - hitSourcePosition;

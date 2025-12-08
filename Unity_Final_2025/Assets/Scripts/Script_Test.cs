@@ -1,3 +1,4 @@
+using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -6,16 +7,32 @@ public class Script_Test : MonoBehaviour
     [SerializeField]
     private float moveSpeed = 5.0f;
     [SerializeField]
-    private float rotationSpeed = 1.0f;
+    private float rotationSpeed = 10.0f;
     [SerializeField]
     public Transform target;
+   
+    [SerializeField] // health
+    private float MaxPlayerHealth = 100.0f;
+    private float currentPlayerHealth;
+
+    [SerializeField] // shelid
+    private float MaxGuardHealth = 150.0f;
+    private float currentGuardHealth;
 
     [SerializeField]
     private bool isPlayer2 = false;
 
-
+    
+    
     [SerializeField]
-    private float pushForce = 5.0f;
+    private float heavyPushForce = 100.0f;
+    [SerializeField]
+    private float jabPunchForce = 50.0f;
+
+    private float pushForce = 50.0f;
+
+    [SerializeField] private AudioSource musicBox;
+
 
 
     private Animator animator;
@@ -24,9 +41,21 @@ public class Script_Test : MonoBehaviour
     private InputAction moveAction = null;
     private InputAction jabs = null;
     private InputAction Block = null;
+    private InputAction Heavy = null;
 
-    [SerializeField] private AudioSource audioSource;
-    [SerializeField] private AudioClip hitSound;
+    private bool wutPunch = false; // true is lightPunch , False is heavy
+
+    private void Start()
+    {
+        currentPlayerHealth = MaxPlayerHealth;
+        currentGuardHealth = MaxGuardHealth;
+
+        animator = GetComponent<Animator>();
+        if (animator == null)
+        {
+            Debug.LogError("Animator component is missing!");
+        }
+    }
 
     private void Awake()
     {
@@ -36,12 +65,6 @@ public class Script_Test : MonoBehaviour
             Debug.LogError("Rigidbody component is missing!");
         }
 
-        // Get AudioSource in Awake instead of Start
-        if (audioSource == null)
-        {
-            audioSource = GetComponent<AudioSource>();
-        }
-
         input = new Player_Input();
 
         if (isPlayer2) // Player 2 controls
@@ -49,22 +72,14 @@ public class Script_Test : MonoBehaviour
             moveAction = input.Player2.Move;
             jabs = input.Player2.Jabs;
             Block = input.Player2.Block;
+            Heavy = input.Player2.Heavy;
         }
         else // Player 1 controls
         {
             moveAction = input.Player.Move;
             jabs = input.Player.Jabs;
             Block = input.Player.Block;
-        }
-    }
-
-    private void Start()
-    {
-        animator = GetComponent<Animator>();
-
-        if (animator == null)
-        {
-            Debug.LogError("Animator component is missing!");
+            Heavy = input.Player.Heavy;
         }
     }
 
@@ -97,6 +112,14 @@ public class Script_Test : MonoBehaviour
             Block.performed += BlockPerformed;
             Block.canceled += BlockCanceled;
         }
+
+        if (Heavy != null) 
+        { 
+            Heavy.Enable();
+            Heavy.performed += HeavyPunchPerformed;
+
+        }
+
     }
 
     private void OnDisable()
@@ -118,6 +141,12 @@ public class Script_Test : MonoBehaviour
             Block.Disable();
             Block.performed -= BlockPerformed;
             Block.canceled -= BlockCanceled;
+        }
+        if (Heavy != null)
+        {
+            Heavy.Disable();
+            Heavy.performed -= HeavyPunchPerformed;
+
         }
     }
 
@@ -161,30 +190,91 @@ public class Script_Test : MonoBehaviour
 
     private void JabsPerformend(InputAction.CallbackContext context)
     {
-        // Determine which jab to trigger based on the input
-        if (context.control.name == "q" || context.control.name == "rightButton") // Left Jab
+        if (isPlayer2)
         {
-            animator.SetTrigger("LJab");
-            Debug.Log("Left Punch Thrown!");
+            if (context.control.name == "rightButton") // Left Jab
+            {
+                wutPunch = true;
+                animator.SetTrigger("LJab");
+                Debug.Log("Left Punch Thrown!");
+
+            }
+            else if (context.control.name == "leftButton") // Right Jab
+            {
+                wutPunch = true;
+                animator.SetTrigger("RJab");
+                Debug.Log("Right Punch Thrown!");
+
+            }
         }
-        else if (context.control.name == "e" || context.control.name == "leftButton") // Right Jab
+
+        else
         {
-            animator.SetTrigger("RJab");
-            Debug.Log("Right Punch Thrown!");
+            if (context.control.name == "q" ) // Left Jab
+            {
+                wutPunch = true; // jab
+                animator.SetTrigger("LJab");
+                Debug.Log("Left Punch Thrown!");
+
+            }
+            else if (context.control.name == "e") // Right Jab
+            {
+                wutPunch = true;
+                animator.SetTrigger("RJab");
+                Debug.Log("Right Punch Thrown!");
+
+            }
         }
     }
 
+    private void HeavyPunchPerformed(InputAction.CallbackContext context) 
+    {
+        if (isPlayer2)
+        {
+            if (context.control.name == "h")
+            {
+                wutPunch = false; // heavy
+                animator.SetTrigger("RHeavy");
+                Debug.Log("Right heavy Thrown!");
+            }
+        }
+
+        else 
+        {
+            if (context.control.name == "g")
+            {
+                wutPunch = false;
+                animator.SetTrigger("RHeavy");
+                Debug.Log("Right heavy Thrown!");
+            }
+        }
+
+        wutPunch = false;
+    
+    }
+
     private bool isBlocking = false;
+
     private void BlockPerformed(InputAction.CallbackContext context)
     {
-        isBlocking = true;
-        animator.SetBool("IsBlocking", true);
-        Debug.Log("Player started blocking.");
+        if (currentGuardHealth <= 0)
+        {
+            Block.Disable();
+            return;
+            // add a function for guard health check
+        }
+
+        else
+        {
+            isBlocking = true;
+            animator.SetBool("IsBlocking", true);
+            Debug.Log("Player started blocking.");
+        }   
     }
 
     private void BlockCanceled(InputAction.CallbackContext context)
     {
-
+       
         isBlocking = false;
         animator.SetBool("IsBlocking", false);
         Debug.Log("Player stopped blocking.");
@@ -192,25 +282,67 @@ public class Script_Test : MonoBehaviour
 
     public void OnHit(Vector3 hitSourcePosition, float force)
     {
-        // Add null check before playing sound
-        if (audioSource != null && hitSound != null)
+        musicBox.Play();
+
+
+        if (isBlocking) // block logic
         {
-            audioSource.PlayOneShot(hitSound);
+            if (wutPunch == true) // jabs
+            {
+                pushForce = jabPunchForce / 2;
+                currentGuardHealth -= 10;
+                Debug.Log($"{currentGuardHealth} left");
+            }
+
+            else // heavy
+            {
+                pushForce = heavyPushForce / 2;
+                currentGuardHealth -= 30;
+                Debug.Log($"{currentGuardHealth} left");
+            }
+
+
         }
-        else
+
+        else 
         {
-            Debug.LogWarning("AudioSource or HitSound is missing!");
+            if (wutPunch == true) // jabs
+            {
+                pushForce = jabPunchForce;
+                currentPlayerHealth -= 10;
+                Debug.Log($"Player Lost Health. {currentPlayerHealth} left");
+
+            }
+
+            else // heavy
+            {
+                pushForce = heavyPushForce;
+                currentPlayerHealth -= 30;
+                Debug.Log($"Player Lost Health. {currentPlayerHealth} left");
+            }
+        }
+
+     
+
+        if (currentPlayerHealth < 0) // dies in spanish
+        {
+            moveAction.Disable();
+            // add a gameover
         }
 
         // Direction from the source to the player -> push player away from the source
+
         Vector3 direction = transform.position - hitSourcePosition;
+
         direction.y = 0f; // keep the push horizontal; remove this line if you want vertical component
+
         if (direction == Vector3.zero)
         {
             direction = transform.forward; // fallback if positions coincide
         }
         direction.Normalize();
         rigidBody.AddForce(direction * force, ForceMode.Impulse);
+       
     }
 
     // React when something tagged "hurtbox" hits this player.
@@ -238,15 +370,19 @@ public class Script_Test : MonoBehaviour
     private void OnCollisionEnter(Collision collision)
     {
         Collider other = collision.collider;
+
         if (!other.CompareTag("HurtBox"))
         {
             return;
         }
+
         Vector3 sourcePos;
+
         if (collision.contacts != null && collision.contacts.Length > 0)
         {
             sourcePos = collision.contacts[0].point;
         }
+
         else
         {
             if (other.attachedRigidbody != null)
@@ -258,6 +394,7 @@ public class Script_Test : MonoBehaviour
                 sourcePos = other.transform.position;
             }
         }
+
         OnHit(sourcePos, pushForce);
     }
 }
