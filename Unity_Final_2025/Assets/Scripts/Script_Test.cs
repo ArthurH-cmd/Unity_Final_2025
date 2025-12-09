@@ -54,6 +54,16 @@ public class Script_Test : MonoBehaviour
 
     private bool wutPunch = false; // true is lightPunch , False is heavy
 
+    public float PlayerHealthMax
+    {
+        get { return MaxPlayerHealth; }
+    }
+
+    public float PlayerHealthCurrent
+    {
+        get { return currentPlayerHealth; }
+    }
+
     private void Start()
     {
         currentPlayerHealth = MaxPlayerHealth;
@@ -90,6 +100,8 @@ public class Script_Test : MonoBehaviour
             Block = input.Player.Block;
             Heavy = input.Player.Heavy;
         }
+
+        currentPlayerHealth = MaxPlayerHealth;
     }
 
     private void OnEnable()
