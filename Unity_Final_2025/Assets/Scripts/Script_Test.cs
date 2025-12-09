@@ -26,9 +26,9 @@ public class Script_Test : MonoBehaviour
     
     
     [SerializeField]
-    private float heavyPushForce = 100.0f;
+    public float heavyPushForce = 100.0f;
     [SerializeField]
-    private float jabPunchForce = 50.0f;
+    public float jabPunchForce = 50.0f;
 
     private float pushForce = 50.0f;
 
@@ -45,6 +45,7 @@ public class Script_Test : MonoBehaviour
     private float shieldIdleTimer = 0f;
     private bool shieldBroken = false;
     private Animator animator;
+    private ParticleSystem sheild_particals;
     private Rigidbody rigidBody = null;
     private Player_Input input = null;
     private InputAction moveAction = null;
@@ -52,7 +53,7 @@ public class Script_Test : MonoBehaviour
     private InputAction Block = null;
     private InputAction Heavy = null;
 
-    private bool wutPunch = false; // true is lightPunch , False is heavy
+    public bool wutPunch = false; // true is lightPunch , False is heavy
 
     public float PlayerHealthMax
     {
@@ -70,10 +71,18 @@ public class Script_Test : MonoBehaviour
         currentGuardHealth = MaxGuardHealth;
 
         animator = GetComponent<Animator>();
+
         if (animator == null)
         {
             Debug.LogError("Animator component is missing!");
         }
+        sheild_particals = GetComponentInChildren<ParticleSystem>();
+
+        if (sheild_particals == null)
+        {
+            Debug.LogError("ParticleSystem component is missing!");
+        }
+
     }
 
     private void Awake()
@@ -293,82 +302,60 @@ public class Script_Test : MonoBehaviour
         Debug.Log("Player stopped blocking.");
     }
 
-    public void OnHit(Vector3 hitSourcePosition, float force)
+    public void OnHit(Vector3 hitSourcePosition, Script_Test attacker)
     {
         musicBox.Play();
 
+        // Use ATTACKER's wutPunch, not yours!
+        int damage = attacker.wutPunch ? 10 : 30;
+        float pushForce = attacker.wutPunch ? attacker.jabPunchForce : attacker.heavyPushForce;
 
-        if (isBlocking) // block logic
+        if (isBlocking && !shieldBroken)
         {
-            if (wutPunch == true) // jabs
-            {
-                pushForce = jabPunchForce / 2;
-                currentGuardHealth -= 10;
-                Debug.Log($"{currentGuardHealth} left");
-            }
-            else // heavy
-            {
-                pushForce = heavyPushForce / 2;
-                currentGuardHealth -= 30;
-                Debug.Log($"{currentGuardHealth} left");
-            }
-            if (currentGuardHealth <= 0 && !shieldBroken)
+            damage /= 2;
+            pushForce /= 2;
+
+            currentGuardHealth -= damage;
+            ShieldHealthColor();
+            sheild_particals.Play();
+
+            Debug.Log($"Blocked {(attacker.wutPunch ? "JAB" : "HEAVY")}: {currentGuardHealth} shield left");
+
+            if (currentGuardHealth <= 0)
             {
                 StartCoroutine(BreakShield());
             }
         }
         else
         {
-            if (wutPunch == true) // jabs
-            {
-                pushForce = jabPunchForce;
-                currentPlayerHealth -= 10;
-                Debug.Log($"Player Lost Health. {currentPlayerHealth} left");
+            currentPlayerHealth -= damage;
+            Debug.Log($"Hit by {(attacker.wutPunch ? "JAB" : "HEAVY")}: {currentPlayerHealth} health left");
 
-            }
-            else // heavy
+            if (currentPlayerHealth <= 0)
             {
-                pushForce = heavyPushForce;
-                currentPlayerHealth -= 30;
-                Debug.Log($"Player Lost Health. {currentPlayerHealth} left");
+                moveAction.Disable();
+                Debug.Log("Player defeated!");
             }
         }
-        ShieldHealthColor(); // change shield color based on health
 
-        if (currentPlayerHealth < 0) // dies in spanish
-        {
-            moveAction.Disable();
-            // add a gameover
-        }
+        Vector3 pushDirection = (transform.position - hitSourcePosition).normalized;
+        pushDirection.y = 0f;
 
-        // Direction from the source to the player -> push player away from the source
+        if (pushDirection == Vector3.zero)
+            pushDirection = transform.forward;
 
-        Vector3 direction = transform.position - hitSourcePosition;
-
-        direction.y = 0f; // keep the push horizontal; remove this line if you want vertical component
-
-        if (direction == Vector3.zero)
-        {
-            direction = transform.forward; // fallback if positions coincide
-        }
-        direction.Normalize();
-        rigidBody.AddForce(direction * force, ForceMode.Impulse);
-       
+        rigidBody.AddForce(pushDirection * pushForce, ForceMode.Impulse);
     }
     private void ShieldHealthColor()
     {
-        if (currentGuardHealth <= MaxGuardHealth * 0.3f)
-        {
-            // Change shield color to red
-        }
-        else if (currentGuardHealth <= MaxGuardHealth * 0.6f)
-        {
-            // Change shield color to yellow
-        }
-        else
-        {
-            // Change shield color to blue
-        }
+        var main = sheild_particals.main;
+
+        float healthPercent = currentGuardHealth / MaxGuardHealth;
+
+       
+        Color newColor = Color.Lerp(Color.darkRed, Color.blue, healthPercent); // you can switch the colors here (it goes from red to blue as health goes from 0 to max)
+
+        main.startColor = newColor;
     }
     // The IEnumerator to handles shield break working as a cooldown, similar to a virtual class and Enum class
     private IEnumerator BreakShield()
@@ -418,51 +405,33 @@ public class Script_Test : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("HurtBox"))
-        {
             return;
-        }
 
-        // Prefer attached rigidbody center if available, otherwise use collider closest point
-        Vector3 sourcePos;
-        if (other.attachedRigidbody != null)
-        {
-            sourcePos = other.attachedRigidbody.worldCenterOfMass;
-        }
-        else
-        {
-            sourcePos = other.ClosestPoint(transform.position);
-        }
-        OnHit(sourcePos, pushForce);
+        // Get who punched you
+        Script_Test attacker = other.GetComponentInParent<Script_Test>();
+        if (attacker == null || attacker == this) // Don't hit yourself
+            return;
+
+        Vector3 sourcePos = other.attachedRigidbody != null
+            ? other.attachedRigidbody.worldCenterOfMass
+            : other.ClosestPoint(transform.position);
+
+        OnHit(sourcePos, attacker);
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        Collider other = collision.collider;
-
-        if (!other.CompareTag("HurtBox"))
-        {
+        if (!collision.collider.CompareTag("HurtBox"))
             return;
-        }
 
-        Vector3 sourcePos;
+        Script_Test attacker = collision.collider.GetComponentInParent<Script_Test>();
+        if (attacker == null || attacker == this)
+            return;
 
-        if (collision.contacts != null && collision.contacts.Length > 0)
-        {
-            sourcePos = collision.contacts[0].point;
-        }
+        Vector3 sourcePos = collision.contacts.Length > 0
+            ? collision.contacts[0].point
+            : collision.collider.transform.position;
 
-        else
-        {
-            if (other.attachedRigidbody != null)
-            {
-                sourcePos = other.attachedRigidbody.worldCenterOfMass;
-            }
-            else
-            {
-                sourcePos = other.transform.position;
-            }
-        }
-
-        OnHit(sourcePos, pushForce);
+        OnHit(sourcePos, attacker);
     }
 }
