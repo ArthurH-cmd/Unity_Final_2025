@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -31,10 +32,18 @@ public class Script_Test : MonoBehaviour
 
     private float pushForce = 50.0f;
 
-    [SerializeField] private AudioSource musicBox;
+    [SerializeField] 
+    private AudioSource musicBox;
 
+    [SerializeField]
+    private float shieldRegenRate = 10.0f; 
+    [SerializeField] 
+    private float shieldMaxIdleTime = 5.0f; // full regen 
+    [SerializeField] 
+    private float shieldBreakCooldown = 10.0f; // disabled block time when shield breaks
 
-
+    private float shieldIdleTimer = 0f;
+    private bool shieldBroken = false;
     private Animator animator;
     private Rigidbody rigidBody = null;
     private Player_Input input = null;
@@ -44,6 +53,16 @@ public class Script_Test : MonoBehaviour
     private InputAction Heavy = null;
 
     private bool wutPunch = false; // true is lightPunch , False is heavy
+
+    public float PlayerHealthMax
+    {
+        get { return MaxPlayerHealth; }
+    }
+
+    public float PlayerHealthCurrent
+    {
+        get { return currentPlayerHealth; }
+    }
 
     private void Start()
     {
@@ -81,6 +100,8 @@ public class Script_Test : MonoBehaviour
             Block = input.Player.Block;
             Heavy = input.Player.Heavy;
         }
+
+        currentPlayerHealth = MaxPlayerHealth;
     }
 
     private void OnEnable()
@@ -157,6 +178,8 @@ public class Script_Test : MonoBehaviour
             Debug.LogWarning("Move action or Rigidbody is not assigned!");
             return;
         }
+
+        HandleShieldRegen();//Call shield regen handler every frame
 
         // Move Input
         Vector2 moveInput = moveAction.ReadValue<Vector2>();
@@ -257,19 +280,9 @@ public class Script_Test : MonoBehaviour
 
     private void BlockPerformed(InputAction.CallbackContext context)
     {
-        if (currentGuardHealth <= 0)
-        {
-            Block.Disable();
-            return;
-            // add a function for guard health check
-        }
-
-        else
-        {
-            isBlocking = true;
-            animator.SetBool("IsBlocking", true);
-            Debug.Log("Player started blocking.");
-        }   
+        isBlocking = true;
+        animator.SetBool("IsBlocking", true);
+        Debug.Log("Player started blocking.");
     }
 
     private void BlockCanceled(InputAction.CallbackContext context)
@@ -293,18 +306,18 @@ public class Script_Test : MonoBehaviour
                 currentGuardHealth -= 10;
                 Debug.Log($"{currentGuardHealth} left");
             }
-
             else // heavy
             {
                 pushForce = heavyPushForce / 2;
                 currentGuardHealth -= 30;
                 Debug.Log($"{currentGuardHealth} left");
             }
-
-
+            if (currentGuardHealth <= 0 && !shieldBroken)
+            {
+                StartCoroutine(BreakShield());
+            }
         }
-
-        else 
+        else
         {
             if (wutPunch == true) // jabs
             {
@@ -313,7 +326,6 @@ public class Script_Test : MonoBehaviour
                 Debug.Log($"Player Lost Health. {currentPlayerHealth} left");
 
             }
-
             else // heavy
             {
                 pushForce = heavyPushForce;
@@ -321,8 +333,7 @@ public class Script_Test : MonoBehaviour
                 Debug.Log($"Player Lost Health. {currentPlayerHealth} left");
             }
         }
-
-     
+        ShieldHealthColor(); // change shield color based on health
 
         if (currentPlayerHealth < 0) // dies in spanish
         {
@@ -344,6 +355,63 @@ public class Script_Test : MonoBehaviour
         rigidBody.AddForce(direction * force, ForceMode.Impulse);
        
     }
+    private void ShieldHealthColor()
+    {
+        if (currentGuardHealth <= MaxGuardHealth * 0.3f)
+        {
+            // Change shield color to red
+        }
+        else if (currentGuardHealth <= MaxGuardHealth * 0.6f)
+        {
+            // Change shield color to yellow
+        }
+        else
+        {
+            // Change shield color to blue
+        }
+    }
+    // The IEnumerator to handles shield break working as a cooldown, similar to a virtual class and Enum class
+    private IEnumerator BreakShield()
+    {
+        shieldBroken = true;
+        isBlocking = false;
+        animator.SetBool("IsBlocking", false);
+
+        Block.Disable(); // block is locked!
+        Debug.Log($"Shield Broke! Blocking disabled for {shieldBreakCooldown} seconds!");
+
+        yield return new WaitForSeconds(shieldBreakCooldown); // wait for cooldown using yield that when the condition is met it continues in the function
+                                                              // the waitforseconds is a function that is part of the IEnumerator and base of C#
+
+        Block.Enable();
+        shieldBroken = false;
+        currentGuardHealth = MaxGuardHealth; // full restore on break end
+        Debug.Log("Shield Ready again!");
+    }
+
+    private void HandleShieldRegen()
+    {
+        if (isBlocking)
+        {
+            shieldIdleTimer = 0f; // reset because shield is being used
+            return;
+        }
+
+        shieldIdleTimer += Time.deltaTime;
+
+        // Passive regen (10 hp per second)
+        if (currentGuardHealth < MaxGuardHealth && !shieldBroken)
+        {
+            currentGuardHealth += shieldRegenRate * Time.deltaTime;
+        }
+        // Full regen after being idle 5 seconds
+        if (shieldIdleTimer >= shieldMaxIdleTime && !shieldBroken)
+        {
+            currentGuardHealth = MaxGuardHealth;
+        }
+        currentGuardHealth = Mathf.Clamp(currentGuardHealth, 0, MaxGuardHealth); // Mathf.Clamp to keep health within bounds because of the ranges given in the function
+    }
+
 
     // React when something tagged "hurtbox" hits this player.
     // Works whether the hurtbox is a trigger or a non-trigger collider.
