@@ -55,6 +55,8 @@ public class Script_Test : MonoBehaviour
 
     public bool wutPunch = false; // true is lightPunch , False is heavy
 
+    public Spectators crowd;
+
     public float PlayerHealthMax
     {
         get { return MaxPlayerHealth; }
@@ -306,18 +308,18 @@ public class Script_Test : MonoBehaviour
     {
         musicBox.Play();
 
+        crowd?.OnHitOccurred(hitSourcePosition, !attacker.wutPunch); // crowd reacts to the hit
+
         // Use ATTACKER's wutPunch, not yours!
         int damage = attacker.wutPunch ? 10 : 30;
         float pushForce = attacker.wutPunch ? attacker.jabPunchForce : attacker.heavyPushForce;
 
         if (isBlocking && !shieldBroken)
         {
-            damage /= 2;
-            pushForce /= 2;
-
             currentGuardHealth -= damage;
             ShieldHealthColor();
             sheild_particals.Play();
+            StartCoroutine(DisableColliderBriefly());
 
             Debug.Log($"Blocked {(attacker.wutPunch ? "JAB" : "HEAVY")}: {currentGuardHealth} shield left");
 
@@ -330,11 +332,18 @@ public class Script_Test : MonoBehaviour
         {
             currentPlayerHealth -= damage;
             Debug.Log($"Hit by {(attacker.wutPunch ? "JAB" : "HEAVY")}: {currentPlayerHealth} health left");
+            StartCoroutine(DisableColliderBriefly());
 
             if (currentPlayerHealth <= 0)
             {
+                crowd.OnPlayerDefeated();
                 moveAction.Disable();
+                jabs.Disable();
+                Heavy.Disable();
                 Debug.Log("Player defeated!");
+
+                attacker.jabs.Disable();
+                attacker.Heavy.Disable();
             }
         }
 
@@ -346,13 +355,21 @@ public class Script_Test : MonoBehaviour
 
         rigidBody.AddForce(pushDirection * pushForce, ForceMode.Impulse);
     }
+
+    private IEnumerator DisableColliderBriefly()
+    {
+        Collider col = GetComponent<Collider>();
+        col.enabled = false;
+        yield return new WaitForSeconds(0.5f);
+        col.enabled = true;
+    }
+
     private void ShieldHealthColor()
     {
         var main = sheild_particals.main;
 
         float healthPercent = currentGuardHealth / MaxGuardHealth;
 
-       
         Color newColor = Color.Lerp(Color.darkRed, Color.blue, healthPercent); // you can switch the colors here (it goes from red to blue as health goes from 0 to max)
 
         main.startColor = newColor;
