@@ -1,7 +1,9 @@
 using NUnit.Framework;
 using System.Collections;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
+
 
 public class Script_Test : MonoBehaviour
 {
@@ -222,40 +224,62 @@ public class Script_Test : MonoBehaviour
         }
     }
 
+    private void randomJab() 
+    {
+     int randomJab = UnityEngine.Random.Range(0, 2);
+
+        if (randomJab == 1)
+        {
+            wutPunch = true;
+            animator.SetTrigger("RJab");
+            Debug.Log("Right Punch Thrown!");
+
+        }
+        else 
+        {
+            wutPunch = true; // jab
+            animator.SetTrigger("LJab");
+            Debug.Log("Left Punch Thrown!");
+
+        }
+    }
+
+    private void randomHeavy()
+    {
+        int randomJab = UnityEngine.Random.Range(0, 2);
+
+        if (randomJab == 1)
+        {
+            wutPunch = false;
+            animator.SetTrigger("RHeavy");
+
+        }
+        else // add L-Heavy here
+        {
+            wutPunch = false;
+            animator.SetTrigger("RHeavy");
+
+        }
+    }
+
+
     private void JabsPerformend(InputAction.CallbackContext context)
     {
         if (isPlayer2)
         {
-            if (context.control.name == "rightButton") // Left Jab
+           
+            if (context.control.name == "leftButton") // Right Jab
             {
-                wutPunch = true;
-                animator.SetTrigger("LJab");
-                Debug.Log("Left Punch Thrown!");
-
-            }
-            else if (context.control.name == "leftButton") // Right Jab
-            {
-                wutPunch = true;
-                animator.SetTrigger("RJab");
-                Debug.Log("Right Punch Thrown!");
+                randomJab();
 
             }
         }
 
         else
         {
-            if (context.control.name == "q" ) // Left Jab
+            if (context.control.name == "e") // Right Jab
             {
-                wutPunch = true; // jab
-                animator.SetTrigger("LJab");
-                Debug.Log("Left Punch Thrown!");
-
-            }
-            else if (context.control.name == "e") // Right Jab
-            {
-                wutPunch = true;
-                animator.SetTrigger("RJab");
-                Debug.Log("Right Punch Thrown!");
+                randomJab();
 
             }
         }
@@ -265,21 +289,17 @@ public class Script_Test : MonoBehaviour
     {
         if (isPlayer2)
         {
-            if (context.control.name == "h")
+            if (context.control.name == "rightButton")
             {
-                wutPunch = false; // heavy
-                animator.SetTrigger("RHeavy");
-                Debug.Log("Right heavy Thrown!");
+               randomHeavy();
             }
         }
 
         else 
         {
-            if (context.control.name == "g")
+            if (context.control.name == "q")
             {
-                wutPunch = false;
-                animator.SetTrigger("RHeavy");
-                Debug.Log("Right heavy Thrown!");
+                randomHeavy();
             }
         }
 

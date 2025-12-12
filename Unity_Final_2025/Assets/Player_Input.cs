@@ -535,7 +535,7 @@ public partial class @Player_Input: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""8b2d2579-2955-49bc-b1c2-3af5d4d3e27a"",
-                    ""path"": ""<Keyboard>/g"",
+                    ""path"": ""<Keyboard>/q"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";Keyboard&Mouse"",
@@ -750,7 +750,7 @@ public partial class @Player_Input: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""a0617438-4eeb-4e9b-a752-408f1207b9d1"",
-                    ""path"": ""<Keyboard>/h"",
+                    ""path"": ""<Mouse>/rightButton"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";Keyboard&Mouse"",
@@ -773,17 +773,6 @@ public partial class @Player_Input: IInputActionCollection2, IDisposable
                     ""name"": """",
                     ""id"": ""78dac98b-737e-4c67-8b8c-b31ede3d6761"",
                     ""path"": ""<Mouse>/leftButton"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": "";Keyboard&Mouse"",
-                    ""action"": ""Jabs"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""2b88a05d-1c4e-48a7-a57e-937366ef62ba"",
-                    ""path"": ""<Mouse>/rightButton"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";Keyboard&Mouse"",
