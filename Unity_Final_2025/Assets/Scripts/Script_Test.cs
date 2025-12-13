@@ -2,6 +2,7 @@ using NUnit.Framework;
 using System.Collections;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.InputSystem;
 
 
@@ -25,8 +26,6 @@ public class Script_Test : MonoBehaviour
     [SerializeField]
     private bool isPlayer2 = false;
 
-
-
     [SerializeField]
     public float heavyPushForce = 100.0f;
     [SerializeField]
@@ -36,6 +35,8 @@ public class Script_Test : MonoBehaviour
 
     [SerializeField]
     private AudioSource musicBox;
+    [SerializeField] 
+    private AudioClip musicClip;
 
     [SerializeField]
     private float shieldRegenRate = 10.0f;
@@ -43,7 +44,13 @@ public class Script_Test : MonoBehaviour
     private float shieldMaxIdleTime = 5.0f; // full regen 
     [SerializeField]
     private float shieldBreakCooldown = 10.0f; // disabled block time when shield breaks
+    [SerializeField]
+    private float parryWindow = 10.0f; // seconds before hit
+    [SerializeField]
+    private float parryStunDuration = 30.0f;
 
+    private float lastBlockPressTime = -10f;
+    private bool parrySuccessful = false;
     private float shieldIdleTimer = 0f;
     private bool shieldBroken = false;
     private Animator animator;
@@ -54,6 +61,8 @@ public class Script_Test : MonoBehaviour
     private InputAction jabs = null;
     private InputAction Block = null;
     private InputAction Heavy = null;
+
+    private bool isHit = false;
 
     public bool wutPunch = false; // true is lightPunch , False is heavy
 
@@ -312,6 +321,7 @@ public class Script_Test : MonoBehaviour
     private void BlockPerformed(InputAction.CallbackContext context)
     {
         isBlocking = true;
+        lastBlockPressTime = Time.time;
         animator.SetBool("IsBlocking", true);
         Debug.Log("Player started blocking.");
     }
@@ -326,7 +336,22 @@ public class Script_Test : MonoBehaviour
 
     public void OnHit(Vector3 hitSourcePosition, Script_Test attacker)
     {
+        if(isHit)
+        {
+            return;
+        }
         musicBox.Play();
+
+        bool canParry =
+       isBlocking &&
+       !shieldBroken &&
+       (Time.time - lastBlockPressTime <= parryWindow);
+
+        if (canParry)
+        {
+            Parry(attacker);
+            return; // stop normal hit processing
+        }
 
         crowd?.OnHitOccurred(hitSourcePosition, !attacker.wutPunch); // crowd reacts to the hit
 
@@ -357,6 +382,11 @@ public class Script_Test : MonoBehaviour
             if (currentPlayerHealth <= 0)
             {
                 crowd.OnPlayerDefeated();
+                musicBox.clip = musicClip;
+                musicBox.loop = true;
+                musicBox.Play();
+
+                animator.SetTrigger("PlayerDeath");
                 moveAction.Disable();
                 jabs.Disable();
                 Heavy.Disable();
@@ -364,6 +394,7 @@ public class Script_Test : MonoBehaviour
 
                 attacker.jabs.Disable();
                 attacker.Heavy.Disable();
+                attacker.animator.SetTrigger("IWon");
             }
         }
 
@@ -375,13 +406,41 @@ public class Script_Test : MonoBehaviour
 
         rigidBody.AddForce(pushDirection * pushForce, ForceMode.Impulse);
     }
+    // Parry functions
+    private void Parry(Script_Test attacker)
+    {
+        // but effects tab here
+        Debug.Log("PARRY SUCCESS!");
+        StartCoroutine(ParryStunEnemy(attacker));
+    }
 
+    private IEnumerator ParryStunEnemy(Script_Test attacker)
+    {
+        // Disable enemy controls
+        attacker.moveAction.Disable();
+        attacker.jabs.Disable();
+        attacker.Heavy.Disable();
+        attacker.Block.Disable();
+
+        yield return new WaitForSeconds(parryStunDuration);
+
+        // Re-enable controls
+        attacker.moveAction.Enable();
+        attacker.jabs.Enable();
+        attacker.Heavy.Enable();
+        attacker.Block.Enable();
+    }
+
+
+    //Shield Functions
     private IEnumerator DisableColliderBriefly()
     {
-        Collider col = GetComponent<Collider>();
-        col.enabled = false;
-        yield return new WaitForSeconds(0.5f);
-        col.enabled = true;
+        isHit = true;
+        //Collider col = GetComponent<Collider>();
+        //col.enabled = false;
+        yield return new WaitForSeconds(0.8f);
+        //col.enabled = true;
+        isHit = false;
     }
 
     private void ShieldHealthColor()
@@ -435,7 +494,7 @@ public class Script_Test : MonoBehaviour
         }
         currentGuardHealth = Mathf.Clamp(currentGuardHealth, 0, MaxGuardHealth); // Mathf.Clamp to keep health within bounds because of the ranges given in the function
     }
-
+    // Hit Detection
 
     // React when something tagged "hurtbox" hits this player.
     // Works whether the hurtbox is a trigger or a non-trigger collider.
@@ -453,7 +512,7 @@ public class Script_Test : MonoBehaviour
         }
 
         Vector3 sourcePos;
-        if (other.attachedRigidbody != null) 
+        if (other.attachedRigidbody != null)
         {
             sourcePos = other.attachedRigidbody.worldCenterOfMass;
         }
