@@ -13,7 +13,7 @@ public class Script_Test : MonoBehaviour
     private float rotationSpeed = 10.0f;
     [SerializeField]
     public Transform target;
-   
+
     [SerializeField] // health
     private float MaxPlayerHealth = 100.0f;
     private float currentPlayerHealth;
@@ -25,8 +25,8 @@ public class Script_Test : MonoBehaviour
     [SerializeField]
     private bool isPlayer2 = false;
 
-    
-    
+
+
     [SerializeField]
     public float heavyPushForce = 100.0f;
     [SerializeField]
@@ -34,14 +34,14 @@ public class Script_Test : MonoBehaviour
 
     private float pushForce = 50.0f;
 
-    [SerializeField] 
+    [SerializeField]
     private AudioSource musicBox;
 
     [SerializeField]
-    private float shieldRegenRate = 10.0f; 
-    [SerializeField] 
+    private float shieldRegenRate = 10.0f;
+    [SerializeField]
     private float shieldMaxIdleTime = 5.0f; // full regen 
-    [SerializeField] 
+    [SerializeField]
     private float shieldBreakCooldown = 10.0f; // disabled block time when shield breaks
 
     private float shieldIdleTimer = 0f;
@@ -147,8 +147,8 @@ public class Script_Test : MonoBehaviour
             Block.canceled += BlockCanceled;
         }
 
-        if (Heavy != null) 
-        { 
+        if (Heavy != null)
+        {
             Heavy.Enable();
             Heavy.performed += HeavyPunchPerformed;
 
@@ -224,9 +224,9 @@ public class Script_Test : MonoBehaviour
         }
     }
 
-    private void randomJab() 
+    private void randomJab()
     {
-     int randomJab = UnityEngine.Random.Range(0, 2);
+        int randomJab = UnityEngine.Random.Range(0, 2);
 
         if (randomJab == 1)
         {
@@ -235,7 +235,7 @@ public class Script_Test : MonoBehaviour
             Debug.Log("Right Punch Thrown!");
 
         }
-        else 
+        else
         {
             wutPunch = true; // jab
             animator.SetTrigger("LJab");
@@ -267,7 +267,7 @@ public class Script_Test : MonoBehaviour
     {
         if (isPlayer2)
         {
-           
+
             if (context.control.name == "leftButton") // Right Jab
             {
                 randomJab();
@@ -285,17 +285,17 @@ public class Script_Test : MonoBehaviour
         }
     }
 
-    private void HeavyPunchPerformed(InputAction.CallbackContext context) 
+    private void HeavyPunchPerformed(InputAction.CallbackContext context)
     {
         if (isPlayer2)
         {
             if (context.control.name == "rightButton")
             {
-               randomHeavy();
+                randomHeavy();
             }
         }
 
-        else 
+        else
         {
             if (context.control.name == "q")
             {
@@ -304,7 +304,7 @@ public class Script_Test : MonoBehaviour
         }
 
         wutPunch = false;
-    
+
     }
 
     private bool isBlocking = false;
@@ -318,7 +318,7 @@ public class Script_Test : MonoBehaviour
 
     private void BlockCanceled(InputAction.CallbackContext context)
     {
-       
+
         isBlocking = false;
         animator.SetBool("IsBlocking", false);
         Debug.Log("Player stopped blocking.");
@@ -442,33 +442,50 @@ public class Script_Test : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("HurtBox"))
+        {
             return;
-
+        }
         // Get who punched you
         Script_Test attacker = other.GetComponentInParent<Script_Test>();
         if (attacker == null || attacker == this) // Don't hit yourself
+        {
             return;
+        }
 
-        Vector3 sourcePos = other.attachedRigidbody != null
-            ? other.attachedRigidbody.worldCenterOfMass
-            : other.ClosestPoint(transform.position);
-
+        Vector3 sourcePos;
+        if (other.attachedRigidbody != null) 
+        {
+            sourcePos = other.attachedRigidbody.worldCenterOfMass;
+        }
+        else
+        {
+            sourcePos = other.ClosestPoint(transform.position);
+        }
         OnHit(sourcePos, attacker);
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (!collision.collider.CompareTag("HurtBox"))
-            return;
+        if (collision.collider.CompareTag("HurtBox"))
+        {
+            Script_Test attacker = collision.collider.GetComponentInParent<Script_Test>();
 
-        Script_Test attacker = collision.collider.GetComponentInParent<Script_Test>();
-        if (attacker == null || attacker == this)
-            return;
+            if (attacker != null && attacker != this)
+            {
+                Vector3 sourcePos;
 
-        Vector3 sourcePos = collision.contacts.Length > 0
-            ? collision.contacts[0].point
-            : collision.collider.transform.position;
+                if (collision.contacts.Length > 0)
+                {
+                    sourcePos = collision.contacts[0].point;
+                }
+                else
+                {
+                    sourcePos = collision.collider.transform.position;
+                }
 
-        OnHit(sourcePos, attacker);
+                OnHit(sourcePos, attacker);
+            }
+        }
     }
+
 }
