@@ -4,6 +4,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 
 public class Script_Test : MonoBehaviour
@@ -399,6 +400,8 @@ public class Script_Test : MonoBehaviour
                 attacker.moveAction.Disable();
                 attacker.Heavy.Disable();
                 attacker.animator.SetTrigger("IWon");
+
+                StartCoroutine(LoadAfterDelay(2f));
             }
         }
 
@@ -499,6 +502,23 @@ public class Script_Test : MonoBehaviour
         }
         currentGuardHealth = Mathf.Clamp(currentGuardHealth, 0, MaxGuardHealth); // Mathf.Clamp to keep health within bounds because of the ranges given in the function
     }
+    // Load scene after delay
+    private IEnumerator LoadAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        if (isPlayer2)
+        {
+            // Player 2 died = Player 1 wins
+            SceneManager.LoadScene("Game_Over_Player_1");
+        }
+        else
+        {
+            // Player 1 died = Player 2 wins
+            SceneManager.LoadScene("Game_Over_Player_2");
+        }
+    }
+
     // Hit Detection
 
     // React when something tagged "hurtbox" hits this player.

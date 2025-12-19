@@ -11,6 +11,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/THE_RING.unity
     guid: ae4cea6db7b045e458276f6b559b930d
+  - enabled: 1
+    path: Assets/Scenes/Game_Over_Player_1.unity
+    guid: e05da3be359a61e46b82ed2ec740eef1
+  - enabled: 1
+    path: Assets/Scenes/Game_Over_Player_2.unity
+    guid: 7abd9f7c084a306438390487bcca8805
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

@@ -6875,7 +6875,7 @@ Transform:
   m_GameObject: {fileID: 961739749}
   serializedVersion: 2
   m_LocalRotation: {x: 0.08150362, y: 0, z: 0, w: 0.99667305}
-  m_LocalPosition: {x: 0, y: 1.6, z: -8.54}
+  m_LocalPosition: {x: 0.3, y: 1.6, z: -8.54}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -7745,6 +7745,51 @@ MonoBehaviour:
   m_SelectedFaces: 
   m_SelectedEdges: []
   m_SelectedVertices: 
+--- !u!1 &1048093418
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1048093420}
+  - component: {fileID: 1048093419}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1048093419
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1048093418}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e3c68183fc17154b8c153e8273d7c22, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BackToTheMainMenu
+  delayBeforeMainMenu: 4
+--- !u!4 &1048093420
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1048093418}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.41929, y: 1.9032, z: 3.13596}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1058641059
 GameObject:
   m_ObjectHideFlags: 0
@@ -8899,6 +8944,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8157189982124018501, guid: 93365797e03782247976510029e6330c, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8697602814699410244, guid: 93365797e03782247976510029e6330c, type: 3}
+      propertyPath: moveSpeed
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8697602814699410244, guid: 93365797e03782247976510029e6330c, type: 3}
+      propertyPath: rotationSpeed
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8827048386614055423, guid: 93365797e03782247976510029e6330c, type: 3}
@@ -15833,3 +15886,4 @@ SceneRoots:
   - {fileID: 85900420}
   - {fileID: 1197517622}
   - {fileID: 969116566}
+  - {fileID: 1048093420}
