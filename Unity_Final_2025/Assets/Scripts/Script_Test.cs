@@ -381,6 +381,9 @@ public class Script_Test : MonoBehaviour
 
             if (currentPlayerHealth <= 0)
             {
+                isHit = false;
+                
+
                 crowd.OnPlayerDefeated();
                 musicBox.clip = musicClip;
                 musicBox.loop = true;
@@ -410,6 +413,7 @@ public class Script_Test : MonoBehaviour
     private void Parry(Script_Test attacker)
     {
         // but effects tab here
+        animator.SetTrigger("IsStun");
         Debug.Log("PARRY SUCCESS!");
         StartCoroutine(ParryStunEnemy(attacker));
     }
@@ -438,7 +442,7 @@ public class Script_Test : MonoBehaviour
         isHit = true;
         //Collider col = GetComponent<Collider>();
         //col.enabled = false;
-        yield return new WaitForSeconds(0.8f);
+        yield return new WaitForSeconds(0.2f);
         //col.enabled = true;
         isHit = false;
     }
