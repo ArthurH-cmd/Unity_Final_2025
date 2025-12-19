@@ -382,8 +382,8 @@ public class Script_Test : MonoBehaviour
             if (currentPlayerHealth <= 0)
             {
                 isHit = false;
-                
-
+               
+                DisableColliderBriefly();
                 crowd.OnPlayerDefeated();
                 musicBox.clip = musicClip;
                 musicBox.loop = true;
@@ -413,7 +413,7 @@ public class Script_Test : MonoBehaviour
     private void Parry(Script_Test attacker)
     {
         // but effects tab here
-        animator.SetTrigger("IsStun");
+        attacker.animator.SetTrigger("IsStun");
         Debug.Log("PARRY SUCCESS!");
         StartCoroutine(ParryStunEnemy(attacker));
     }
