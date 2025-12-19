@@ -356,7 +356,7 @@ public class Script_Test : MonoBehaviour
         crowd?.OnHitOccurred(hitSourcePosition, !attacker.wutPunch); // crowd reacts to the hit
 
         // Use ATTACKER's wutPunch, not yours!
-        int damage = attacker.wutPunch ? 10 : 30;
+        int damage = attacker.wutPunch ? 5 : 15;
         float pushForce = attacker.wutPunch ? attacker.jabPunchForce : attacker.heavyPushForce;
 
         if (isBlocking && !shieldBroken)
@@ -396,6 +396,7 @@ public class Script_Test : MonoBehaviour
                 Debug.Log("Player defeated!");
 
                 attacker.jabs.Disable();
+                attacker.moveAction.Disable();
                 attacker.Heavy.Disable();
                 attacker.animator.SetTrigger("IWon");
             }
@@ -413,7 +414,6 @@ public class Script_Test : MonoBehaviour
     private void Parry(Script_Test attacker)
     {
         // but effects tab here
-        attacker.animator.SetTrigger("IsStun");
         Debug.Log("PARRY SUCCESS!");
         StartCoroutine(ParryStunEnemy(attacker));
     }
@@ -421,6 +421,7 @@ public class Script_Test : MonoBehaviour
     private IEnumerator ParryStunEnemy(Script_Test attacker)
     {
         // Disable enemy controls
+        attacker.animator.SetTrigger("IsStun");
         attacker.moveAction.Disable();
         attacker.jabs.Disable();
         attacker.Heavy.Disable();
